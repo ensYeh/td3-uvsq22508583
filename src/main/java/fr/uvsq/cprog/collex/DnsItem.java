@@ -6,17 +6,13 @@ public class DnsItem {
     private NomMachine nomMachine;
 
     // constructeur 
-    public DnsItem(){
-
-    }
-    
     public DnsItem(AdresseIP adrIP, NomMachine NomMachine){
         this.adrIP = adrIP;
         this.nomMachine = NomMachine;
     }
 
     //getters 
-        public AdresseIP getAdrIP() {
+    public AdresseIP getAdrIP() {
         return adrIP;
     }
 
