@@ -27,7 +27,7 @@ public class Dns {
             String resourceFile = props.getProperty("dns.database.filename");
             System.out.println("Le fichier de base de données du DNS chargé : " + resourceFile);
 
-            Path runtimeFile = Path.of("dns_database_runtime.txt");
+            Path runtimeFile = Path.of("td3-uvsq22508583", "dns_database_runtime.txt");
             this.nomFichier = runtimeFile.toString();
 
             // Copier depuis resources si besoin

@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 public class DnsTUI {
 
     public DnsTUI(){
-
+        
     }
 
     public static Commande nextCommande(String texteUtilisateur){
