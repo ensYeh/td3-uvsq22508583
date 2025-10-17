@@ -1,39 +1,66 @@
 package fr.uvsq.cprog.collex;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-public class Dns {
-    private String fichiername;
-    private List<String> bddCont;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
-    public Dns(){
-        //Constructeur pour charger la bdd depuis le fichier "BDD du DNS"
+public class Dns {
+    private String nomFichier;
+    private List<String> bddContenu;
+
+
+    public Dns() {
         Properties props = new Properties();
-        try (FileInputStream fis = new FileInputStream("config.properties")) {
-            props.load(fis);
-            this.fichiername = props.getProperty("dns.database.nomfichier");
-            System.out.println(" le Fichier de la BDD DNS chargé avec succès  : " + fichiername);
-            this.bddCont = Files.readAllLines(Path.of(this.fichiername));
+
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                System.err.println("Impossible de trouver config.properties");
+                return;
+            }
+
+            props.load(input);
+            String resourceFile = props.getProperty("dns.database.filename");
+            System.out.println("Le fichier de base de données du DNS chargé : " + resourceFile);
+
+            Path runtimeFile = Path.of("dns_database_runtime.txt");
+            this.nomFichier = runtimeFile.toString();
+
+            // Copier depuis resources si besoin
+            if (!Files.exists(runtimeFile)) {
+                try (InputStream dnsStream = getClass().getClassLoader().getResourceAsStream(resourceFile)) {
+                    if (dnsStream != null) {
+                        Files.copy(dnsStream, runtimeFile);
+                        System.out.println("Copie initiale du fichier vers dns_database_runtime.txt");
+                    } else {
+                        // créer un fichier vide si la ressource n’existe pas
+                        Files.createFile(runtimeFile);
+                        System.out.println("Création d’un nouveau fichier dns_database_runtime.txt vide");
+                    }
+                }
+            }
+
+            // Charger le contenu du fichier modifiable
+            this.bddContenu = Files.readAllLines(runtimeFile);
+            System.out.println("Base de données DNS chargée avec succès (" + bddContenu.size() + " lignes).");
+
         } catch (IOException e) {
-            System.err.println("Impossible de charger le fichier de propriétés erreur !! : " + e.getMessage());
+            System.err.println("Erreur lors du chargement du fichier DNS :");
+            e.printStackTrace();
         }
     }
 
     public DnsItem getItem(AdresseIP adrIP){
-        //return :  une instance de DnsItem à partir d'une adresseIP
+        //Retourner une instance de DnsItem à partir d'une adresse IP
         NomMachine nomMac = null;
-        for(String item : bddCont){
+        for(String item : bddContenu){
            if(item.contains(adrIP.toString())){
                String[] parts = item.split(" ");
-               String[] nomMachine = parts[0].split("\\.");
+               String[] nomMachine = parts[1].split("\\.");
                nomMac = new NomMachine(nomMachine[0], nomMachine[1], nomMachine[2]);
                break;
            }
@@ -42,12 +69,12 @@ public class Dns {
     }
 
     public DnsItem getItem(NomMachine nomMac){
-        //return  : une instance de DnsItem à partir d'un nom de machine
+        //Retourner une instance de DnsItem à partir d'un nom de machine
         AdresseIP adrIP = null;
-        for(String item : bddCont){
+        for(String item : bddContenu){
             if(item.contains(nomMac.toString())){
                 String[] parts = item.split(" ");
-                String[] adresse = parts[1].split("\\.");
+                String[] adresse = parts[0].split("\\.");
                 adrIP = new AdresseIP(Integer.parseInt(adresse[0]), Integer.parseInt(adresse[1]), Integer.parseInt(adresse[2]), Integer.parseInt(adresse[3]));
                 break;
             }
@@ -56,13 +83,14 @@ public class Dns {
     }
 
     public List<DnsItem> getItems(String nomDomaine){
-        //Return :  une liste d'instances de DnsItem à partir d'un nom de domaine
+        //Retourner une liste d'instances de DnsItem à partir d'un nom de domaine
         List<DnsItem> listeIPDomaine = new ArrayList<DnsItem>();
-        for(String item : bddCont){
-            if(item.contains(nomDomaine+" ")){
+        for(String item : bddContenu){
+            String nomD = (nomDomaine.split(" "))[1];
+            if(item.contains(nomD)){
                 String[] parts = item.split(" ");
-                String[] machine = parts[0].split("\\.");
-                String[] adresse = parts[1].split("\\.");
+                String[] adresse = parts[0].split("\\.");
+                String[] machine = parts[1].split("\\.");
                 NomMachine nomMac = new NomMachine(machine[0], machine[1], machine[2]);
                 AdresseIP adrIP = new AdresseIP(Integer.parseInt(adresse[0]), Integer.parseInt(adresse[1]), Integer.parseInt(adresse[2]), Integer.parseInt(adresse[3]));
                 listeIPDomaine.add(new DnsItem(adrIP, nomMac));
@@ -71,19 +99,38 @@ public class Dns {
         return listeIPDomaine;
     }
 
-    public void addItem(AdresseIP adrIP, NomMachine nomMac) throws IOException {
-        //Ajout d'une ligne dans le fichier de la bdd au Dns 
-        int i = 0;
-        while(i<bddCont.size()){
-            if(bddCont.get(i).contains(nomMac.toString()+" ")){
-                break;
+    public String addItem(AdresseIP adrIP, NomMachine nomMac) {
+        try {
+            // Vérification doublons
+            for (String line : bddContenu) {
+                if (line.contains(adrIP.toString())) {
+                    return "ERREUR : L'adresse IP existe déjà !";
+                } else if (line.contains(nomMac.toString())) {
+                    return "ERREUR : Le nom de machine existe déjà !";
+                }
             }
-            i++;
-        }
-        if(i==bddCont.size()){
-            List<String> dnsItem = new ArrayList<String>();
-            dnsItem.add(nomMac.toString()+" "+adrIP.toString());
-            Files.write(Path.of(this.fichiername), dnsItem, StandardOpenOption.APPEND);
+
+            // Création de la nouvelle ligne
+            String entry = adrIP.toString() + " " + nomMac.toString();
+
+            // S’assurer que le fichier existe avant d’écrire
+            Path filePath = Path.of(this.nomFichier);
+            if (!Files.exists(filePath)) {
+                Files.createFile(filePath);
+            }
+
+            // Écrire dans le fichier (avec saut de ligne)
+            Files.writeString(filePath, entry + System.lineSeparator(), StandardOpenOption.APPEND);
+
+            // Mettre à jour la liste en mémoire
+            this.bddContenu.add(entry);
+
+            return "Ajout réussi.";
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "ERREUR : Impossible d'écrire dans le fichier : " + e.getMessage();
         }
     }
+
 }
