@@ -89,7 +89,7 @@ public class Dns {
 
     for(String item : bddContenu){
         String[] parts = item.split(" ");    
-        String nomMachine = parts[1];      
+        String nomMachine = parts[1];        
 
         // Vérifie si le nom de machine se termine par le domaine recherché
         if(nomMachine.endsWith("." + nomDomaine)){
@@ -105,7 +105,9 @@ public class Dns {
             listeIPDomaine.add(new DnsItem(adrIP, nomMac));
         }
     }
+
     return listeIPDomaine;
+
     }
 
 
