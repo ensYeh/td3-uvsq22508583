@@ -1,29 +1,27 @@
 package fr.uvsq.cprog.collex;
 
 public class DnsItem {
-    private AdresseIP adrIP;
+    private AdresseIP adresseIP;
     private NomMachine nomMac;
 
-    public DnsItem(){
-
-    }
-
-    public DnsItem(AdresseIP adrIP, NomMachine nomMac){
-        this.adrIP = adrIP;
+    //constructeur 
+    public DnsItem(AdresseIP adresseIP, NomMachine nomMac){
+        this.adresseIP = adresseIP;
         this.nomMac = nomMac;
     }
 
-    
+    //getters 
     public AdresseIP getAdrIP() {
-        return adrIP;
+        return adresseIP;
     }
 
     public NomMachine getNomMac(){
         return nomMac;
     }
 
+    //redéfinition de toString : 
     @Override
     public String toString(){
-        return adrIP.toString()+" "+nomMac.toString();
+        return adresseIP.toString()+" "+nomMac.toString();
     }
 }

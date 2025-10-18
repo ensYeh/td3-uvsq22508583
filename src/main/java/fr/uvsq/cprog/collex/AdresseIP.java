@@ -6,6 +6,7 @@ public class AdresseIP {
     private int se;
     private int ip;
 
+    // constructeur classqiue 
     public AdresseIP(int adr, int es, int se, int ip){
         this.adr = adr;
         this.es = es;
@@ -13,9 +14,10 @@ public class AdresseIP {
         this.ip = ip;
     }
 
+    // constructeur pour initialiser une adresse IP a partir de texte saisi par le user : 
     public AdresseIP(String adresseIP) {
         if (!adresseIP.matches("^((25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]?\\d)\\.){3}(25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]?\\d)$")) {
-            throw new IllegalArgumentException("Invalid IPv4 address: " + adresseIP);
+            throw new IllegalArgumentException(" L adresse IP saisi est invalide : " + adresseIP);
         }
         String[] parts = adresseIP.split("\\.");
         this.adr = Integer.parseInt(parts[0]);
@@ -24,6 +26,7 @@ public class AdresseIP {
         this.ip  = Integer.parseInt(parts[3]);
     }
 
+    // getters 
     public int getAdr() {
         return adr;
     }
@@ -40,6 +43,7 @@ public class AdresseIP {
         return ip;
     }
 
+    // Redéfinition de la methode toString  : 
     @Override
     public String toString(){
         return ((Integer)adr)+"."+((Integer)es)+"."+((Integer)se)+"."+((Integer)ip);

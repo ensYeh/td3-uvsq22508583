@@ -7,12 +7,14 @@ public class AjouterItemBD implements Commande {
         this.texteCommande = texteCommande;
         execute();
     }
+
+    // Implémentation de la méthode execute : 
     @Override
     public void execute(){
         Dns dns = new Dns();
         String[] parts = texteCommande.split("\\s+");
         if (parts.length != 3 || !parts[0].equals("add")) {
-            throw new IllegalArgumentException("Invalid command format");
+            throw new IllegalArgumentException(" la commande est invalide vérifier !!! ");
         }
         AdresseIP adrIP = new AdresseIP(parts[1]);
         NomMachine nomMac = new NomMachine(parts[2]);
