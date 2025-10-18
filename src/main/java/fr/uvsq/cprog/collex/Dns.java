@@ -53,6 +53,31 @@ public class Dns {
         }
     }
 
+    // Constructeur utilisé uniquement pour les tests unitaires
+    public Dns(Path fichierTest) {
+        this.nomFichier = fichierTest.toString();
+
+        try {
+            // Si le fichier n'existe pas encore, on le crée
+            if (!Files.exists(fichierTest)) {
+                Files.createFile(fichierTest);
+            }
+
+            // Lecture du contenu du fichier dans la liste bddContenu
+            this.bddContenu = Files.readAllLines(fichierTest);
+
+            // Si la base est vide, on l’indique (utile pour vérifier les tests)
+            if (bddContenu.isEmpty()) {
+                System.out.println(" Base de données DNS vide (mode test).");
+            }
+
+        } catch (IOException e) {
+            System.err.println("Erreur lors du chargement du fichier DNS de test :");
+            e.printStackTrace();
+            this.bddContenu = new ArrayList<>(); // évite un NPE
+        }
+    }
+
     //  Retourne un DnsItem correspondant à une adresse IP donnée : 
     public DnsItem getItem(AdresseIP adrIP){
         NomMachine nomMac = null;

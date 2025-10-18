@@ -19,7 +19,7 @@ class DnsTest {
             Files.delete(TEST_FILE);
         }
         Files.createFile(TEST_FILE);
-        dns = new Dns();
+        dns = new Dns(TEST_FILE);
     }
 
     @AfterEach
