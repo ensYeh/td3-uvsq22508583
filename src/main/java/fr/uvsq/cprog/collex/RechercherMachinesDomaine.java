@@ -1,41 +1,22 @@
-/* package fr.uvsq.cprog.collex;
-import java.util.List;
 
-public class RechercherMachinesDomaine implements Commande{
-    String texteCommande;
-
-    // constructeur 
-    public RechercherMachinesDomaine(String texteCommande){
-        this.texteCommande = texteCommande;
-        execute();
-    }
-
-    // Implémentation de la méthode execute pour rechercher machine d'un domain : 
-    @Override
-    public void execute(){
-        Dns dns = new Dns();
-        List<DnsItem> liste = dns.getItems(texteCommande);
-        StringBuilder resultat = new StringBuilder();
-        for (DnsItem item : liste) {
-            resultat.append(item.toString()).append(System.lineSeparator());
-        }
-        String res = resultat.toString();
-        DnsTUI.affiche(res);
-    }
-}
-*/
 
 package fr.uvsq.cprog.collex;
-
 import java.util.List;
 import java.util.Comparator;
 
 public class RechercherMachinesDomaine implements Commande {
     String texteCommande;
+    private Dns dns;
 
-    // Constructeur
+    // Constructeur normal 
     public RechercherMachinesDomaine(String texteCommande) {
+        this(texteCommande, new Dns());
+    }
+
+    //  Constructeur utilisé pour les tests 
+    public RechercherMachinesDomaine(String texteCommande, Dns dns) {
         this.texteCommande = texteCommande;
+        this.dns = dns;
         execute();
     }
 
@@ -47,13 +28,12 @@ public class RechercherMachinesDomaine implements Commande {
         boolean trierParIP = false;
         String nomDomaine = null;
 
-        // Séparer la commande en mots
         String[] parts = texteCommande.trim().split("\\s+");
 
         for (String part : parts) {
-            if (part.equals("ls")) continue;       // ignorer le mot 'ls'
-            if (part.equals("-a")) trierParIP = true;  // option -a détectée
-            else nomDomaine = part;               // le reste est le domaine
+            if (part.equals("ls")) continue;       
+            if (part.equals("-a")) trierParIP = true;  
+            else nomDomaine = part;              
         }
 
         if (nomDomaine == null) {

@@ -18,40 +18,47 @@ public class Dns {
     //et charge le contenu de la bdd DNS en mémoire 
 
     public Dns() {
-        Properties props = new Properties();
+    Properties props = new Properties();
 
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
-            if (input == null) {
-                System.err.println(" le fichier config.properties est introuvable !");
-                return;
-            }
-
-            props.load(input);
-            String resourceFile = props.getProperty("dns.database.filename");
-
-            Path runtimeFile = Path.of("td3-uvsq22508583", "dns_database_runtime.txt");
-            this.nomFichier = runtimeFile.toString();
-
-            // Copier depuis resources si besoin
-            if (!Files.exists(runtimeFile)) {
-                try (InputStream dnsStream = getClass().getClassLoader().getResourceAsStream(resourceFile)) {
-                    if (dnsStream != null) {
-                        Files.copy(dnsStream, runtimeFile);
-                        System.out.println("Copie initiale du fichier vers dns_database_runtime.txt");
-                    } else {
-                        Files.createFile(runtimeFile);
-                        System.out.println("Aucun fichier source trouvé. Création d’un fichier vide 'dns_database_runtime.txt'");
-                    }
-                }
-            }
-            this.bddContenu = Files.readAllLines(runtimeFile);
-
-
-        } catch (IOException e) {
-            System.err.println("Erreur lors du chargement du fichier DNS :");
-            e.printStackTrace();
+    try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+        if (input == null) {
+            System.err.println(" Le fichier config.properties est introuvable !");
+            this.bddContenu = new ArrayList<>();
+            return;
         }
+
+        props.load(input);
+        String resourceFile = props.getProperty("dns.database.filename");
+
+        Path runtimeFile = Path.of("td3-uvsq22508583", "dns_database_runtime.txt");
+        this.nomFichier = runtimeFile.toString();
+
+        // Si le fichier existe déjà, on le charge 
+        if (Files.exists(runtimeFile)) {
+            this.bddContenu = Files.readAllLines(runtimeFile);
+            return;
+        }
+
+        // on le crée, sinon 
+        try (InputStream dnsStream = getClass().getClassLoader().getResourceAsStream(resourceFile)) {
+            if (dnsStream != null) {
+                Files.copy(dnsStream, runtimeFile);
+                System.out.println(" Copie initiale du fichier DNS vers dns_database_runtime.txt");
+            } else {
+                Files.createFile(runtimeFile);
+                System.out.println(" Aucun fichier source trouve, création d un fichier vide dns_database_runtime.txt");
+            }
+        }
+
+        // Charger le contenu 
+        this.bddContenu = Files.readAllLines(runtimeFile);
+
+    } catch (IOException e) {
+        System.err.println(" Erreur lors du chargement du fichier DNS : " + e.getMessage());
+        this.bddContenu = new ArrayList<>();
     }
+    }
+
 
     // Constructeur utilisé uniquement pour les tests unitaires
     public Dns(Path fichierTest) {
